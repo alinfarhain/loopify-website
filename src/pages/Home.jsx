@@ -306,29 +306,36 @@ export default function Home() {
             </p>
 
             <div className="home-community-actions">
-            <Link
-                className="button button-secondary"
-                to="/about"
-            >
-                Meet Loopify
-            </Link>
+                <Link
+                    className="button button-secondary"
+                    to="/about"
+                >
+                    Meet Loopify
+                </Link>
 
-            <Link
-                className="button button-secondary"
-                to="/community"
-            >
-                Explore the Community
-            </Link>
+                <Link
+                    className="button button-secondary"
+                    to="/community"
+                >
+                    Explore the Community
+                </Link>
 
-            <a
-                className="button button-primary"
-                href="https://www.instagram.com/loopify_charmies/"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Follow @loopify_charmies ↗
-            </a>
-            </div>
+                <Link
+                    className="button button-secondary"
+                    to="/faq"
+                >
+                    Read the FAQ
+                </Link>
+
+                <a
+                    className="button button-primary"
+                    href="https://www.instagram.com/loopify_charmies/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Follow @loopify_charmies ↗
+                </a>
+                </div>
           </div>
         </div>
       </section>

@@ -13,6 +13,7 @@ import Collections from "./pages/Collections.jsx";
 import HowItWorks from "./pages/HowItWorks.jsx";
 import Community from "./pages/Community.jsx";
 import About from "./pages/About.jsx";
+import FAQ from "./pages/FAQ.jsx";
 
 export default function App() {
   return (
@@ -59,12 +60,7 @@ export default function App() {
 
         <Route
           path="faq"
-          element={
-            <PlaceholderPage
-              title="Frequently Asked Questions"
-              description="Find information about ordering, payment, pickup, and duplicate charms."
-            />
-          }
+          element={<FAQ />}
         />
 
         <Route
@@ -105,6 +101,26 @@ export default function App() {
           path="terms"
           element={
             <PlaceholderPage title="Terms and Conditions" />
+          }
+        />
+
+        <Route
+          path="contact"
+          element={
+            <PlaceholderPage
+              title="Contact and Support"
+              description="Contact Loopify for order, payment, pickup or product support."
+            />
+          }
+        />
+
+        <Route
+          path="charm-swap"
+          element={
+            <PlaceholderPage
+              title="Charm Swap"
+              description="Connect with other Loopify collectors and arrange consent-based duplicate charm trades."
+            />
           }
         />
 
