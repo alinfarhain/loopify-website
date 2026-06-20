@@ -210,6 +210,14 @@ export default function Home() {
             </article>
           ))}
         </div>
+        <div className="home-process-link">
+        <Link
+            className="button button-secondary"
+            to="/how-it-works"
+        >
+            View the Complete Ordering Process
+        </Link>
+        </div>
       </section>
 
       <section className="shop-information page-section">

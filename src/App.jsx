@@ -10,6 +10,7 @@ import PlaceholderPage from "./pages/PlaceholderPage.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
 import Shop from "./pages/Shop.jsx";
 import Collections from "./pages/Collections.jsx";
+import HowItWorks from "./pages/HowItWorks.jsx";
 
 export default function App() {
   return (
@@ -31,12 +32,7 @@ export default function App() {
 
         <Route
           path="how-it-works"
-          element={
-            <PlaceholderPage
-              title="How It Works"
-              description="Learn how to choose, order, collect and unbox your mystery charm."
-            />
-          }
+          element={<HowItWorks />}
         />
 
         <Route

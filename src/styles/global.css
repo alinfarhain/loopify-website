@@ -3072,6 +3072,656 @@ textarea[aria-invalid="true"] {
 }
 
 /* =========================================================
+   HOW IT WORKS PAGE
+   ========================================================= */
+
+.how-hero {
+  display: grid;
+  min-height: 650px;
+  align-items: center;
+  gap: clamp(3rem, 7vw, 7rem);
+  grid-template-columns: 1.05fr 0.95fr;
+}
+
+.how-hero-description {
+  max-width: 680px;
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+}
+
+.how-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block: 2rem;
+}
+
+.how-hero-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.how-hero-facts span {
+  padding: 0.4rem 0.75rem;
+  background: var(--white);
+  border: 2px solid var(--maroon);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.how-hero-visual {
+  display: grid;
+  min-height: 420px;
+  place-items: center;
+  align-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  background:
+    linear-gradient(
+      rgb(255 255 255 / 72%),
+      rgb(255 255 255 / 72%)
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 22px,
+      var(--pink) 22px,
+      var(--pink) 23px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 22px,
+      var(--pink) 22px,
+      var(--pink) 23px
+    );
+}
+
+.how-collection-preview {
+  display: grid;
+  width: min(390px, 100%);
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.how-mini-collection {
+  display: grid;
+  min-width: 0;
+  padding: 0.45rem;
+  place-items: center;
+  background: var(--white);
+  border: 2px solid var(--maroon);
+  box-shadow: 4px 4px 0 var(--maroon);
+}
+
+.how-mini-collection img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.how-mini-collection > span:last-child {
+  margin-top: 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.how-mini-secret {
+  align-content: center;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgb(116 19 63 / 12%),
+      rgb(116 19 63 / 12%) 10px,
+      transparent 10px,
+      transparent 20px
+    ),
+    var(--light-pink);
+}
+
+.how-mini-secret span {
+  font-size: 3rem;
+  font-weight: 900;
+}
+
+.how-mini-secret strong {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.how-loading-track {
+  width: min(330px, 100%);
+  height: 24px;
+  padding: 3px;
+  border: 3px solid var(--maroon);
+}
+
+.how-loading-track span {
+  display: block;
+  width: 84%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--maroon),
+    var(--maroon) 14px,
+    var(--pink) 14px,
+    var(--pink) 23px
+  );
+  animation: how-loading-pulse 1.6s ease-in-out
+    infinite alternate;
+}
+
+@keyframes how-loading-pulse {
+  from {
+    width: 64%;
+  }
+
+  to {
+    width: 94%;
+  }
+}
+
+.home-process-link {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.how-process {
+  padding-top: 3rem;
+}
+
+.how-progress-panel {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--white);
+  border: 3px solid var(--maroon);
+  box-shadow: var(--small-shadow);
+}
+
+.how-progress-heading {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 0.7rem;
+  font-family: "Courier New", monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.how-progress-track {
+  overflow: hidden;
+  width: 100%;
+  height: 24px;
+  padding: 3px;
+  background: var(--white);
+  border: 3px solid var(--maroon);
+}
+
+.how-progress-track > span {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--maroon),
+    var(--maroon) 15px,
+    var(--pink) 15px,
+    var(--pink) 24px
+  );
+  transition: width 250ms ease;
+}
+
+.how-process-layout {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+  grid-template-columns:
+    minmax(300px, 0.85fr)
+    minmax(0, 1.15fr);
+}
+
+.how-step-list {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.how-step-button {
+  display: grid;
+  width: 100%;
+  min-height: 96px;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--white);
+  border: 3px solid #b79aa7;
+  color: var(--dark-maroon);
+  text-align: left;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.how-step-button:hover {
+  border-color: var(--maroon);
+  transform: translate(-2px, -2px);
+}
+
+.how-step-button.is-active {
+  background: var(--light-pink);
+  border-color: var(--maroon);
+  box-shadow: 5px 5px 0 var(--maroon);
+}
+
+.how-step-button.is-complete {
+  background: var(--cyan);
+  border-color: var(--maroon);
+}
+
+.how-step-number {
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.how-step-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  background: var(--pink);
+  border: 2px solid var(--maroon);
+  border-radius: 50%;
+  font-weight: 900;
+}
+
+.how-step-button-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.how-step-button-copy strong {
+  margin-bottom: 0.2rem;
+}
+
+.how-step-button-copy small {
+  color: #654553;
+  line-height: 1.4;
+}
+
+.how-step-arrow {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.how-step-detail {
+  position: sticky;
+  top: 115px;
+  overflow: hidden;
+  background: var(--white);
+  border: 4px solid var(--maroon);
+  box-shadow: var(--shadow);
+}
+
+.how-step-detail-content {
+  padding: clamp(1.4rem, 4vw, 2.5rem);
+}
+
+.how-step-detail-header {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.how-step-detail-header > span {
+  display: grid;
+  flex-shrink: 0;
+  width: 74px;
+  height: 74px;
+  place-items: center;
+  background: linear-gradient(
+    145deg,
+    var(--pink),
+    var(--aqua)
+  );
+  border: 3px solid var(--maroon);
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.how-step-detail-header .eyebrow {
+  margin-bottom: 0.35rem;
+}
+
+.how-step-detail-header h3 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.how-step-summary {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.how-detail-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-block: 1.5rem;
+  padding-left: 1.4rem;
+}
+
+.how-step-tip {
+  margin-block: 1.5rem;
+  padding: 1rem;
+  background: var(--cyan);
+  border: 2px dashed var(--maroon);
+}
+
+.how-step-tip p {
+  margin: 0.35rem 0 0;
+}
+
+.how-step-detail-content > .button {
+  width: 100%;
+}
+
+.how-detail-navigation {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px dashed var(--maroon);
+  grid-template-columns: 1fr 1fr;
+}
+
+.how-information-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.how-information-card {
+  padding: 1.5rem;
+  background: var(--white);
+  border: 3px solid var(--maroon);
+  box-shadow: var(--small-shadow);
+}
+
+.how-information-icon {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  margin-bottom: 1.5rem;
+  place-items: center;
+  background: linear-gradient(
+    145deg,
+    var(--pink),
+    var(--aqua)
+  );
+  border: 3px solid var(--maroon);
+  border-radius: 50%;
+  font-weight: 900;
+}
+
+.how-information-card ul {
+  display: grid;
+  gap: 0.55rem;
+  padding-left: 1.3rem;
+}
+
+.how-checklist {
+  border-top: 2px dashed var(--maroon);
+}
+
+.how-checklist-heading {
+  display: flex;
+  gap: 2rem;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.how-checklist-heading > p {
+  max-width: 440px;
+}
+
+.how-checklist-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.how-checklist-card {
+  position: relative;
+  padding: 1.4rem;
+  background: var(--white);
+  border: 3px solid var(--maroon);
+}
+
+.how-checklist-card > span {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 1.5rem;
+  place-items: center;
+  background: var(--pink);
+  border: 2px solid var(--maroon);
+  border-radius: 50%;
+  font-family: "Courier New", monospace;
+  font-weight: 900;
+}
+
+.how-checklist-card h3 {
+  margin-bottom: 0.7rem;
+}
+
+.how-random-reminder {
+  padding-block: 2rem 6rem;
+}
+
+.how-random-reminder-content {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.how-reminder-symbol {
+  display: grid;
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  place-items: center;
+  background: linear-gradient(
+    145deg,
+    var(--pink),
+    var(--lavender),
+    var(--aqua)
+  );
+  border: 4px solid var(--maroon);
+  border-radius: 50%;
+  box-shadow: var(--small-shadow);
+  font-size: 5rem;
+  font-weight: 900;
+}
+
+.how-random-reminder-content p:last-child {
+  max-width: 760px;
+  margin-bottom: 0;
+}
+
+.how-final-cta {
+  display: flex;
+  gap: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-block: 5rem;
+  padding-inline: clamp(1.5rem, 5vw, 4rem);
+  background: var(--dark-maroon);
+  border: 4px solid var(--maroon);
+  box-shadow: var(--shadow);
+  color: var(--white);
+}
+
+.how-final-cta .eyebrow {
+  color: var(--pink);
+}
+
+.how-final-cta p {
+  max-width: 700px;
+}
+
+.how-final-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1rem;
+  flex-direction: column;
+}
+
+/* How It Works tablet */
+
+@media (max-width: 1000px) {
+  .how-hero {
+    min-height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .how-process-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .how-step-detail {
+    position: relative;
+    top: auto;
+  }
+
+  .how-information-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .how-checklist-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .how-final-cta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .how-final-actions {
+    width: 100%;
+    flex-direction: row;
+  }
+}
+
+/* How It Works mobile */
+
+@media (max-width: 700px) {
+  .how-hero-copy {
+    text-align: center;
+  }
+
+  .how-hero-actions,
+  .how-hero-facts {
+    justify-content: center;
+  }
+
+  .how-step-button {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+
+  .how-step-arrow {
+    display: none;
+  }
+
+  .how-step-button-copy small {
+    font-size: 0.78rem;
+  }
+
+  .how-progress-heading,
+  .how-checklist-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .how-checklist-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .how-random-reminder-content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .how-final-actions {
+    flex-direction: column;
+  }
+
+  .how-final-actions .button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
+  .how-collection-preview {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .how-hero-actions {
+    flex-direction: column;
+  }
+
+  .how-hero-actions .button {
+    width: 100%;
+  }
+
+  .how-step-button {
+    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .how-step-number {
+    display: none;
+  }
+
+  .how-step-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .how-step-detail-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .how-step-detail-header > span {
+    width: 62px;
+    height: 62px;
+  }
+
+  .how-detail-navigation {
+    grid-template-columns: 1fr;
+  }
+
+  .how-reminder-symbol {
+    width: 95px;
+    height: 95px;
+    font-size: 4rem;
+  }
+}
+
+/* =========================================================
    REDUCED MOTION
    ========================================================= */
 
