@@ -41,7 +41,7 @@ export default function Footer() {
 
         <div className="footer-links">
           <Link to="/faq">FAQ</Link>
-          <Link to="/contact">Contact</Link>
+          <Link to="/contact">Contact and Support</Link>
           <Link to="/privacy">Privacy</Link>
           <Link to="/terms">Terms</Link>
         </div>
@@ -49,7 +49,13 @@ export default function Footer() {
 
       <div>
         <h2>Join the Loop</h2>
-
+        <a
+        href="https://wa.me/60129717470"
+        target="_blank"
+        rel="noopener noreferrer"
+        >
+        WhatsApp Support
+        </a>
         <a
         className="social-link"
         href="https://www.instagram.com/loopify_charmies/"
