@@ -11,6 +11,7 @@ import ProductDetails from "./pages/ProductDetails.jsx";
 import Shop from "./pages/Shop.jsx";
 import Collections from "./pages/Collections.jsx";
 import HowItWorks from "./pages/HowItWorks.jsx";
+import Community from "./pages/Community.jsx";
 
 export default function App() {
   return (
@@ -37,12 +38,7 @@ export default function App() {
 
         <Route
           path="community"
-          element={
-            <PlaceholderPage
-              title="Community"
-              description="View customer reviews, unboxing posts, guessing polls and collection updates."
-            />
-          }
+          element={<Community />}
         />
 
         <Route

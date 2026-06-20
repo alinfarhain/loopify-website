@@ -305,14 +305,23 @@ export default function Home() {
               announcements.
             </p>
 
-            <a
-              className="button button-primary"
-              href="https://www.instagram.com/loopify_charmies/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <div className="home-community-actions">
+            <Link
+                className="button button-secondary"
+                to="/community"
             >
-              Follow @loopify_charmies ↗
+                Explore the Community
+            </Link>
+
+            <a
+                className="button button-primary"
+                href="https://www.instagram.com/loopify_charmies/"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Follow @loopify_charmies ↗
             </a>
+            </div>
           </div>
         </div>
       </section>
