@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 
 import { collections } from "../data/collections.js";
+import PromotionalVideo from "../components/home/PromotionalVideo.jsx";
+import PromotionalPoster from "../components/home/PromotionalPoster.jsx";
 
 const steps = [
   {
@@ -123,6 +125,8 @@ export default function Home() {
         </div>
       </section>
 
+      <PromotionalVideo />
+
       <section className="page-section">
         <div className="section-heading">
           <div>
@@ -184,6 +188,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <PromotionalPoster />
 
       <section className="page-section steps-section">
         <div className="section-heading">

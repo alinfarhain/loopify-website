@@ -16,6 +16,7 @@ import About from "./pages/About.jsx";
 import FAQ from "./pages/FAQ.jsx";
 import Contact from "./pages/Contact.jsx";
 import Privacy from "./pages/Privacy.jsx";
+import Terms from "./pages/Terms.jsx";
 
 export default function App() {
   return (
@@ -101,9 +102,12 @@ export default function App() {
 
         <Route
           path="terms"
-          element={
-            <PlaceholderPage title="Terms and Conditions" />
-          }
+          element={<Terms />}
+        />
+
+        <Route
+          path="terms-and-conditions"
+          element={<Terms />}
         />
 
         <Route

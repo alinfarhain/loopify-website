@@ -52,21 +52,21 @@ export default function Header() {
 
       <header className="site-header">
         <Link
-        className="brand"
+        className="header-brand"
         to="/"
-        onClick={closeMenu}
         aria-label="Loopify Charmies homepage"
         >
-        <img
+        <span className="header-logo-frame">
+            <img
             className="header-logo"
             src={loopifyLogo}
             alt=""
-            aria-hidden="true"
-        />
+            />
+        </span>
 
-        <span className="brand-text">
+        <span className="header-brand-copy">
             <strong>Loopify</strong>
-            <small>Charmies</small>
+            <small>CHARMIES</small>
         </span>
         </Link>
 
