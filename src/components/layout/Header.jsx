@@ -1,17 +1,39 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router";
 
+import { useCart } from "../../context/CartContext.jsx";
+
 const navigationItems = [
-  { label: "Home", to: "/", end: true },
-  { label: "Shop", to: "/shop" },
-  { label: "Collections", to: "/collections" },
-  { label: "How It Works", to: "/how-it-works" },
-  { label: "Community", to: "/community" },
-  { label: "About", to: "/about" },
+  {
+    label: "Home",
+    to: "/",
+    end: true,
+  },
+  {
+    label: "Shop",
+    to: "/shop",
+  },
+  {
+    label: "Collections",
+    to: "/collections",
+  },
+  {
+    label: "How It Works",
+    to: "/how-it-works",
+  },
+  {
+    label: "Community",
+    to: "/community",
+  },
+  {
+    label: "About",
+    to: "/about",
+  },
 ];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { totalBoxes } = useCart();
 
   function closeMenu() {
     setMenuOpen(false);
@@ -44,14 +66,18 @@ export default function Header() {
           type="button"
           aria-expanded={menuOpen}
           aria-controls="primary-navigation"
-          onClick={() => setMenuOpen((currentState) => !currentState)}
+          onClick={() => {
+            setMenuOpen((currentState) => !currentState);
+          }}
         >
           {menuOpen ? "Close" : "Menu"}
         </button>
 
         <nav
           id="primary-navigation"
-          className={`primary-navigation ${menuOpen ? "is-open" : ""}`}
+          className={`primary-navigation ${
+            menuOpen ? "is-open" : ""
+          }`}
           aria-label="Primary navigation"
         >
           {navigationItems.map((item) => (
@@ -61,15 +87,23 @@ export default function Header() {
               end={item.end}
               onClick={closeMenu}
               className={({ isActive }) =>
-                isActive ? "navigation-link is-active" : "navigation-link"
+                isActive
+                  ? "navigation-link is-active"
+                  : "navigation-link"
               }
             >
               {item.label}
             </NavLink>
           ))}
 
-          <Link className="cart-button" to="/cart" onClick={closeMenu}>
-            Bag <span aria-label="0 items">(0)</span>
+          <Link
+            className="cart-button"
+            to="/cart"
+            onClick={closeMenu}
+            aria-label={`Shopping bag with ${totalBoxes} mystery boxes`}
+          >
+            Bag{" "}
+            <span aria-hidden="true">({totalBoxes})</span>
           </Link>
         </nav>
       </header>

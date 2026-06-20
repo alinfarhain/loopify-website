@@ -1,9 +1,14 @@
 import { Route, Routes } from "react-router";
 
 import SiteLayout from "./components/layout/SiteLayout.jsx";
+import Cart from "./pages/Cart.jsx";
+import Checkout from "./pages/Checkout.jsx";
 import Home from "./pages/Home.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import OrderConfirmation from "./pages/OrderConfirmation.jsx";
 import PlaceholderPage from "./pages/PlaceholderPage.jsx";
+import ProductDetails from "./pages/ProductDetails.jsx";
+import Shop from "./pages/Shop.jsx";
 
 export default function App() {
   return (
@@ -11,14 +16,11 @@ export default function App() {
       <Route element={<SiteLayout />}>
         <Route index element={<Home />} />
 
+        <Route path="shop" element={<Shop />} />
+
         <Route
-          path="shop"
-          element={
-            <PlaceholderPage
-              title="Loopify Shop"
-              description="Browse all available Loopify mystery blind boxes."
-            />
-          }
+          path="product/:productSlug"
+          element={<ProductDetails />}
         />
 
         <Route
@@ -27,16 +29,6 @@ export default function App() {
             <PlaceholderPage
               title="Collections"
               description="Explore HyperBloomz, CosmicGlitz, AquaSurfz and the secret HaloWhimpz collection."
-            />
-          }
-        />
-
-        <Route
-          path="product/:productSlug"
-          element={
-            <PlaceholderPage
-              title="Product Details"
-              description="View product images, pricing, collection possibilities and fulfilment information."
             />
           }
         />
@@ -101,34 +93,13 @@ export default function App() {
           }
         />
 
-        <Route
-          path="cart"
-          element={
-            <PlaceholderPage
-              title="Shopping Cart"
-              description="Review your mystery blind boxes before checkout."
-            />
-          }
-        />
+        <Route path="cart" element={<Cart />} />
 
-        <Route
-          path="checkout"
-          element={
-            <PlaceholderPage
-              title="Checkout"
-              description="Enter your details, select fulfilment and choose a payment method."
-            />
-          }
-        />
+        <Route path="checkout" element={<Checkout />} />
 
         <Route
           path="order-confirmation"
-          element={
-            <PlaceholderPage
-              title="Your Lucky Charm Is Loading!"
-              description="Your Loopify order has been received."
-            />
-          }
+          element={<OrderConfirmation />}
         />
 
         <Route
@@ -148,7 +119,9 @@ export default function App() {
 
         <Route
           path="terms"
-          element={<PlaceholderPage title="Terms and Conditions" />}
+          element={
+            <PlaceholderPage title="Terms and Conditions" />
+          }
         />
 
         <Route path="*" element={<NotFound />} />
