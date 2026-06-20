@@ -1,3 +1,4 @@
+import loopifyLogo from "../../assets/images/brand/loopify-logo.jpeg";
 import { useState } from "react";
 import { Link, NavLink } from "react-router";
 
@@ -46,19 +47,27 @@ export default function Header() {
       </a>
 
       <div className="announcement-bar">
-        RM7 mystery blind boxes ★ Find your lucky charm!
+        RM7 mystery blind boxes ★ Maximum 3 per order ★ Find your lucky charm!
       </div>
 
       <header className="site-header">
-        <Link className="brand" to="/" onClick={closeMenu}>
-          <span className="brand-mark" aria-hidden="true">
-            LC
-          </span>
+        <Link
+        className="brand"
+        to="/"
+        onClick={closeMenu}
+        aria-label="Loopify Charmies homepage"
+        >
+        <img
+            className="header-logo"
+            src={loopifyLogo}
+            alt=""
+            aria-hidden="true"
+        />
 
-          <span className="brand-text">
+        <span className="brand-text">
             <strong>Loopify</strong>
             <small>Charmies</small>
-          </span>
+        </span>
         </Link>
 
         <button

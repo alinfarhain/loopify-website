@@ -1,3 +1,4 @@
+import duitNowQr from "../assets/images/payment/duitnow-qr.jpeg";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -11,7 +12,7 @@ const checkoutSteps = [
   },
   {
     number: 2,
-    name: "Fulfilment",
+    name: "Pickup",
   },
   {
     number: 3,
@@ -21,6 +22,21 @@ const checkoutSteps = [
     number: 4,
     name: "Review",
   },
+];
+
+const MAX_RECEIPT_SIZE = 5 * 1024 * 1024;
+
+const allowedReceiptTypes = [
+  "image/jpeg",
+  "image/png",
+  "application/pdf",
+];
+
+const allowedReceiptExtensions = [
+  "jpg",
+  "jpeg",
+  "png",
+  "pdf",
 ];
 
 function getLocalDateString() {
@@ -48,6 +64,18 @@ function FieldError({ message }) {
   );
 }
 
+function getPaymentMethodLabel(paymentMethod) {
+  if (paymentMethod === "duitnow") {
+    return "DuitNow QR";
+  }
+
+  if (paymentMethod === "cash") {
+    return "Cash at Pickup";
+  }
+
+  return "Not selected";
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
 
@@ -63,6 +91,9 @@ export default function Checkout() {
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
+  const [receiptFile, setReceiptFile] =
+    useState(null);
+
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -70,33 +101,123 @@ export default function Checkout() {
     matricNumber: "",
     notes: "",
 
-    fulfilmentMethod: "pickup",
     pickupDate: "",
     pickupTime: "",
-
-    addressLine: "",
-    city: "",
-    state: "",
-    postcode: "",
-    deliveryNotes: "",
 
     paymentMethod: "",
     agreeTerms: false,
   });
 
   function updateField(event) {
-    const { name, type, checked, value } = event.target;
+    const {
+      name,
+      type,
+      checked,
+      value,
+    } = event.target;
 
     setForm((currentForm) => ({
       ...currentForm,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
     }));
+
+    if (
+      name === "paymentMethod" &&
+      value === "cash"
+    ) {
+      setReceiptFile(null);
+    }
 
     if (errors[name]) {
       setErrors((currentErrors) => ({
         ...currentErrors,
         [name]: "",
       }));
+    }
+
+    if (
+      name === "paymentMethod" &&
+      errors.receipt
+    ) {
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        receipt: "",
+      }));
+    }
+  }
+
+  function handleReceiptUpload(event) {
+    const selectedFile =
+      event.target.files?.[0];
+
+    if (!selectedFile) {
+      setReceiptFile(null);
+      return;
+    }
+
+    const fileExtension = selectedFile.name
+      .split(".")
+      .pop()
+      ?.toLowerCase();
+
+    const validFileType =
+      allowedReceiptTypes.includes(
+        selectedFile.type,
+      ) ||
+      allowedReceiptExtensions.includes(
+        fileExtension,
+      );
+
+    if (!validFileType) {
+      setReceiptFile(null);
+
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        receipt:
+          "Upload a JPG, JPEG, PNG, or PDF receipt.",
+      }));
+
+      event.target.value = "";
+      return;
+    }
+
+    if (
+      selectedFile.size >
+      MAX_RECEIPT_SIZE
+    ) {
+      setReceiptFile(null);
+
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        receipt:
+          "The receipt must be 5 MB or smaller.",
+      }));
+
+      event.target.value = "";
+      return;
+    }
+
+    setReceiptFile(selectedFile);
+
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      receipt: "",
+    }));
+  }
+
+  function removeReceipt() {
+    setReceiptFile(null);
+
+    const input =
+      document.getElementById(
+        "payment-receipt",
+      );
+
+    if (input) {
+      input.value = "";
     }
   }
 
@@ -129,45 +250,36 @@ export default function Checkout() {
     }
 
     if (step === 2) {
-      if (form.fulfilmentMethod === "pickup") {
-        if (!form.pickupDate) {
-          nextErrors.pickupDate =
-            "Choose a pickup date.";
-        }
-
-        if (!form.pickupTime) {
-          nextErrors.pickupTime =
-            "Choose a pickup time.";
-        }
+      if (!form.pickupDate) {
+        nextErrors.pickupDate =
+          "Choose a pickup date.";
       }
 
-      if (form.fulfilmentMethod === "delivery") {
-        if (form.addressLine.trim().length < 5) {
-          nextErrors.addressLine =
-            "Enter a complete delivery address.";
-        }
-
-        if (form.city.trim().length < 2) {
-          nextErrors.city = "Enter your city.";
-        }
-
-        if (!form.state) {
-          nextErrors.state = "Select your state.";
-        }
-
-        if (!/^\d{5}$/.test(form.postcode)) {
-          nextErrors.postcode =
-            "Enter a valid five-digit postcode.";
-        }
+      if (!form.pickupTime) {
+        nextErrors.pickupTime =
+          "Choose a pickup time.";
       }
     }
 
-    if (step === 3 && !form.paymentMethod) {
-      nextErrors.paymentMethod =
-        "Select a payment method.";
+    if (step === 3) {
+      if (!form.paymentMethod) {
+        nextErrors.paymentMethod =
+          "Select a payment method.";
+      }
+
+      if (
+        form.paymentMethod === "duitnow" &&
+        !receiptFile
+      ) {
+        nextErrors.receipt =
+          "Upload your payment receipt after completing the DuitNow payment.";
+      }
     }
 
-    if (step === 4 && !form.agreeTerms) {
+    if (
+      step === 4 &&
+      !form.agreeTerms
+    ) {
       nextErrors.agreeTerms =
         "You must accept the terms before placing the order.";
     }
@@ -176,15 +288,21 @@ export default function Checkout() {
   }
 
   function moveToNextStep() {
-    const nextErrors = validateStep(currentStep);
+    const nextErrors =
+      validateStep(currentStep);
 
-    if (Object.keys(nextErrors).length > 0) {
+    if (
+      Object.keys(nextErrors).length > 0
+    ) {
       setErrors(nextErrors);
       return;
     }
 
     setErrors({});
-    setCurrentStep((step) => Math.min(4, step + 1));
+
+    setCurrentStep((step) =>
+      Math.min(4, step + 1),
+    );
 
     window.scrollTo({
       top: 0,
@@ -194,7 +312,10 @@ export default function Checkout() {
 
   function moveToPreviousStep() {
     setErrors({});
-    setCurrentStep((step) => Math.max(1, step - 1));
+
+    setCurrentStep((step) =>
+      Math.max(1, step - 1),
+    );
 
     window.scrollTo({
       top: 0,
@@ -210,7 +331,9 @@ export default function Checkout() {
       ...validateStep(4),
     };
 
-    if (Object.keys(allErrors).length > 0) {
+    if (
+      Object.keys(allErrors).length > 0
+    ) {
       setErrors(allErrors);
 
       const detailFields = [
@@ -219,30 +342,36 @@ export default function Checkout() {
         "phone",
       ];
 
-      const fulfilmentFields = [
+      const pickupFields = [
         "pickupDate",
         "pickupTime",
-        "addressLine",
-        "city",
-        "state",
-        "postcode",
       ];
 
       if (
-        detailFields.some((field) => allErrors[field])
+        detailFields.some(
+          (field) => allErrors[field],
+        )
       ) {
         setCurrentStep(1);
       } else if (
-        fulfilmentFields.some(
+        pickupFields.some(
           (field) => allErrors[field],
         )
       ) {
         setCurrentStep(2);
-      } else if (allErrors.paymentMethod) {
+      } else if (
+        allErrors.paymentMethod ||
+        allErrors.receipt
+      ) {
         setCurrentStep(3);
       } else {
         setCurrentStep(4);
       }
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
 
       return;
     }
@@ -253,29 +382,50 @@ export default function Checkout() {
       orderNumber: `LPF-${Date.now()
         .toString()
         .slice(-8)}`,
+
       createdAt: new Date().toISOString(),
-      status: "Order confirmed",
+
+      status:
+        form.paymentMethod === "duitnow"
+          ? "Payment proof submitted"
+          : "Order confirmed — payment due at pickup",
+
       items: cartItems,
       totalBoxes,
       subtotal,
+
       customer: {
         fullName: form.fullName,
         email: form.email,
         phone: form.phone,
-        matricNumber: form.matricNumber,
+        matricNumber:
+          form.matricNumber,
         notes: form.notes,
       },
+
       fulfilment: {
-        method: form.fulfilmentMethod,
+        method: "pickup",
+        location:
+          "EDU Café, near the Kulliyyah of Engineering and Education buildings",
         pickupDate: form.pickupDate,
         pickupTime: form.pickupTime,
-        addressLine: form.addressLine,
-        city: form.city,
-        state: form.state,
-        postcode: form.postcode,
-        deliveryNotes: form.deliveryNotes,
       },
-      paymentMethod: form.paymentMethod,
+
+      paymentMethod:
+        form.paymentMethod,
+
+      paymentStatus:
+        form.paymentMethod === "duitnow"
+          ? "Receipt uploaded for verification"
+          : "Payment due at pickup",
+
+      receiptProof: receiptFile
+        ? {
+            name: receiptFile.name,
+            type: receiptFile.type,
+            size: receiptFile.size,
+          }
+        : null,
     };
 
     try {
@@ -285,9 +435,13 @@ export default function Checkout() {
       );
 
       clearCart();
+
       navigate("/order-confirmation");
     } catch (error) {
-      console.error("Unable to create the order:", error);
+      console.error(
+        "Unable to create the order:",
+        error,
+      );
 
       setErrors({
         submit:
@@ -301,16 +455,22 @@ export default function Checkout() {
   if (cartItems.length === 0) {
     return (
       <section className="empty-cart-page page-section">
-        <div className="empty-cart-symbol" aria-hidden="true">
+        <div
+          className="empty-cart-symbol"
+          aria-hidden="true"
+        >
           !
         </div>
 
-        <p className="eyebrow">CHECKOUT_UNAVAILABLE</p>
+        <p className="eyebrow">
+          CHECKOUT_UNAVAILABLE
+        </p>
+
         <h1>Your checkout is empty</h1>
 
         <p>
-          Add at least one Loopify mystery box before beginning
-          checkout.
+          Add at least one Loopify mystery
+          box before beginning checkout.
         </p>
 
         <Link
@@ -326,12 +486,17 @@ export default function Checkout() {
   return (
     <section className="checkout-page page-section">
       <div className="checkout-heading">
-        <p className="eyebrow">SECURE_CHECKOUT.EXE</p>
+        <p className="eyebrow">
+          SECURE_CHECKOUT.EXE
+        </p>
+
         <h1>Complete Your Order</h1>
 
         <p>
-          Complete each step below. Required fields are marked
-          with an asterisk.
+          All Loopify orders are collected
+          through campus pickup. Complete each
+          step below to reserve your mystery
+          boxes.
         </p>
       </div>
 
@@ -363,7 +528,10 @@ export default function Checkout() {
         <div className="checkout-form-panel">
           {currentStep === 1 && (
             <section aria-labelledby="details-heading">
-              <p className="eyebrow">STEP_01</p>
+              <p className="eyebrow">
+                STEP_01
+              </p>
+
               <h2 id="details-heading">
                 Customer Details
               </h2>
@@ -380,14 +548,16 @@ export default function Checkout() {
                     type="text"
                     autoComplete="name"
                     value={form.fullName}
-                    aria-invalid={
-                      Boolean(errors.fullName)
-                    }
+                    aria-invalid={Boolean(
+                      errors.fullName,
+                    )}
                     onChange={updateField}
                   />
 
                   <FieldError
-                    message={errors.fullName}
+                    message={
+                      errors.fullName
+                    }
                   />
                 </div>
 
@@ -402,11 +572,15 @@ export default function Checkout() {
                     type="email"
                     autoComplete="email"
                     value={form.email}
-                    aria-invalid={Boolean(errors.email)}
+                    aria-invalid={Boolean(
+                      errors.email,
+                    )}
                     onChange={updateField}
                   />
 
-                  <FieldError message={errors.email} />
+                  <FieldError
+                    message={errors.email}
+                  />
                 </div>
 
                 <div className="form-field">
@@ -421,11 +595,15 @@ export default function Checkout() {
                     autoComplete="tel"
                     value={form.phone}
                     placeholder="+60 12 345 6789"
-                    aria-invalid={Boolean(errors.phone)}
+                    aria-invalid={Boolean(
+                      errors.phone,
+                    )}
                     onChange={updateField}
                   />
 
-                  <FieldError message={errors.phone} />
+                  <FieldError
+                    message={errors.phone}
+                  />
                 </div>
 
                 <div className="form-field">
@@ -437,13 +615,15 @@ export default function Checkout() {
                     id="matricNumber"
                     name="matricNumber"
                     type="text"
-                    value={form.matricNumber}
+                    value={
+                      form.matricNumber
+                    }
                     onChange={updateField}
                   />
 
                   <small>
-                    Optional. Useful for campus pickup
-                    identification.
+                    Optional. This can help
+                    identify your campus pickup.
                   </small>
                 </div>
 
@@ -462,8 +642,8 @@ export default function Checkout() {
                   />
 
                   <small>
-                    Do not enter passwords or banking
-                    information.
+                    Do not include passwords or
+                    banking information.
                   </small>
                 </div>
               </div>
@@ -471,281 +651,141 @@ export default function Checkout() {
           )}
 
           {currentStep === 2 && (
-            <section aria-labelledby="fulfilment-heading">
-              <p className="eyebrow">STEP_02</p>
-              <h2 id="fulfilment-heading">
-                Choose Fulfilment
+            <section aria-labelledby="pickup-heading">
+              <p className="eyebrow">
+                STEP_02
+              </p>
+
+              <h2 id="pickup-heading">
+                Campus Pickup
               </h2>
 
-              <div className="radio-card-grid">
-                <label
-                  className={`radio-card ${
-                    form.fulfilmentMethod === "pickup"
-                      ? "is-selected"
-                      : ""
-                  }`}
+              <div className="pickup-only-card">
+                <div
+                  className="pickup-only-icon"
+                  aria-hidden="true"
                 >
-                  <input
-                    type="radio"
-                    name="fulfilmentMethod"
-                    value="pickup"
-                    checked={
-                      form.fulfilmentMethod === "pickup"
-                    }
-                    onChange={updateField}
-                  />
+                </div>
 
-                  <span>
-                    <strong>Campus Pickup</strong>
-                    <small>
-                      Collect your order at EDU Café.
-                    </small>
-                  </span>
-                </label>
-
-                <label
-                  className={`radio-card ${
-                    form.fulfilmentMethod === "delivery"
-                      ? "is-selected"
-                      : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="fulfilmentMethod"
-                    value="delivery"
-                    checked={
-                      form.fulfilmentMethod ===
-                      "delivery"
-                    }
-                    onChange={updateField}
-                  />
-
-                  <span>
-                    <strong>Delivery</strong>
-                    <small>
-                      Provide an address for delivery.
-                    </small>
-                  </span>
-                </label>
-              </div>
-
-              {form.fulfilmentMethod === "pickup" && (
-                <div className="fulfilment-box">
+                <div>
                   <h3>EDU Café Pickup Point</h3>
 
                   <p>
-                    Near the Kulliyyah of Engineering and
+                    All orders must be collected
+                    at EDU Café, near the
+                    Kulliyyah of Engineering and
                     Education buildings.
                   </p>
 
-                  <div className="form-grid">
-                    <div className="form-field">
-                      <label htmlFor="pickupDate">
-                        Pickup date *
-                      </label>
+                  <strong>
+                    No delivery option is
+                    available.
+                  </strong>
+                </div>
+              </div>
 
-                      <input
-                        id="pickupDate"
-                        name="pickupDate"
-                        type="date"
-                        min={getLocalDateString()}
-                        value={form.pickupDate}
-                        aria-invalid={Boolean(
-                          errors.pickupDate,
-                        )}
-                        onChange={updateField}
-                      />
+              <div className="fulfilment-box">
+                <h3>
+                  Select Your Pickup Schedule
+                </h3>
 
-                      <FieldError
-                        message={errors.pickupDate}
-                      />
-                    </div>
+                <div className="form-grid">
+                  <div className="form-field">
+                    <label htmlFor="pickupDate">
+                      Pickup date *
+                    </label>
 
-                    <div className="form-field">
-                      <label htmlFor="pickupTime">
-                        Pickup time *
-                      </label>
+                    <input
+                      id="pickupDate"
+                      name="pickupDate"
+                      type="date"
+                      min={
+                        getLocalDateString()
+                      }
+                      value={
+                        form.pickupDate
+                      }
+                      aria-invalid={Boolean(
+                        errors.pickupDate,
+                      )}
+                      onChange={updateField}
+                    />
 
-                      <select
-                        id="pickupTime"
-                        name="pickupTime"
-                        value={form.pickupTime}
-                        aria-invalid={Boolean(
-                          errors.pickupTime,
-                        )}
-                        onChange={updateField}
-                      >
-                        <option value="">
-                          Select a time
-                        </option>
-                        <option value="12:00 PM – 1:00 PM">
-                          12:00 PM – 1:00 PM
-                        </option>
-                        <option value="1:00 PM – 2:00 PM">
-                          1:00 PM – 2:00 PM
-                        </option>
-                        <option value="4:00 PM – 5:00 PM">
-                          4:00 PM – 5:00 PM
-                        </option>
-                        <option value="5:00 PM – 6:00 PM">
-                          5:00 PM – 6:00 PM
-                        </option>
-                      </select>
+                    <FieldError
+                      message={
+                        errors.pickupDate
+                      }
+                    />
+                  </div>
 
-                      <FieldError
-                        message={errors.pickupTime}
-                      />
-                    </div>
+                  <div className="form-field">
+                    <label htmlFor="pickupTime">
+                      Pickup time *
+                    </label>
+
+                    <select
+                      id="pickupTime"
+                      name="pickupTime"
+                      value={
+                        form.pickupTime
+                      }
+                      aria-invalid={Boolean(
+                        errors.pickupTime,
+                      )}
+                      onChange={updateField}
+                    >
+                      <option value="">
+                        Select a time
+                      </option>
+
+                      <option value="12:00 PM – 1:00 PM">
+                        12:00 PM – 1:00 PM
+                      </option>
+
+                      <option value="1:00 PM – 2:00 PM">
+                        1:00 PM – 2:00 PM
+                      </option>
+
+                      <option value="4:00 PM – 5:00 PM">
+                        4:00 PM – 5:00 PM
+                      </option>
+
+                      <option value="5:00 PM – 6:00 PM">
+                        5:00 PM – 6:00 PM
+                      </option>
+                    </select>
+
+                    <FieldError
+                      message={
+                        errors.pickupTime
+                      }
+                    />
                   </div>
                 </div>
-              )}
-
-              {form.fulfilmentMethod ===
-                "delivery" && (
-                <div className="fulfilment-box">
-                  <h3>Delivery Address</h3>
-
-                  <div className="form-grid">
-                    <div className="form-field form-field-full">
-                      <label htmlFor="addressLine">
-                        Address *
-                      </label>
-
-                      <input
-                        id="addressLine"
-                        name="addressLine"
-                        type="text"
-                        autoComplete="street-address"
-                        value={form.addressLine}
-                        aria-invalid={Boolean(
-                          errors.addressLine,
-                        )}
-                        onChange={updateField}
-                      />
-
-                      <FieldError
-                        message={errors.addressLine}
-                      />
-                    </div>
-
-                    <div className="form-field">
-                      <label htmlFor="city">
-                        City *
-                      </label>
-
-                      <input
-                        id="city"
-                        name="city"
-                        type="text"
-                        autoComplete="address-level2"
-                        value={form.city}
-                        aria-invalid={Boolean(errors.city)}
-                        onChange={updateField}
-                      />
-
-                      <FieldError message={errors.city} />
-                    </div>
-
-                    <div className="form-field">
-                      <label htmlFor="state">
-                        State *
-                      </label>
-
-                      <select
-                        id="state"
-                        name="state"
-                        value={form.state}
-                        aria-invalid={Boolean(
-                          errors.state,
-                        )}
-                        onChange={updateField}
-                      >
-                        <option value="">
-                          Select a state
-                        </option>
-                        <option value="Selangor">
-                          Selangor
-                        </option>
-                        <option value="Kuala Lumpur">
-                          Kuala Lumpur
-                        </option>
-                        <option value="Putrajaya">
-                          Putrajaya
-                        </option>
-                        <option value="Negeri Sembilan">
-                          Negeri Sembilan
-                        </option>
-                        <option value="Other">
-                          Other
-                        </option>
-                      </select>
-
-                      <FieldError
-                        message={errors.state}
-                      />
-                    </div>
-
-                    <div className="form-field">
-                      <label htmlFor="postcode">
-                        Postcode *
-                      </label>
-
-                      <input
-                        id="postcode"
-                        name="postcode"
-                        type="text"
-                        inputMode="numeric"
-                        maxLength="5"
-                        autoComplete="postal-code"
-                        value={form.postcode}
-                        aria-invalid={Boolean(
-                          errors.postcode,
-                        )}
-                        onChange={updateField}
-                      />
-
-                      <FieldError
-                        message={errors.postcode}
-                      />
-                    </div>
-
-                    <div className="form-field form-field-full">
-                      <label htmlFor="deliveryNotes">
-                        Delivery notes
-                      </label>
-
-                      <textarea
-                        id="deliveryNotes"
-                        name="deliveryNotes"
-                        rows="3"
-                        value={form.deliveryNotes}
-                        onChange={updateField}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
             </section>
           )}
 
           {currentStep === 3 && (
             <section aria-labelledby="payment-heading">
-              <p className="eyebrow">STEP_03</p>
+              <p className="eyebrow">
+                STEP_03
+              </p>
+
               <h2 id="payment-heading">
                 Payment Method
               </h2>
 
               <p>
-                These are prototype payment options. Do not
-                enter real banking passwords or card
-                information.
+                Select DuitNow QR or pay cash
+                when collecting your order.
               </p>
 
               <div className="payment-method-list">
                 <label
                   className={`payment-card ${
-                    form.paymentMethod === "duitnow"
+                    form.paymentMethod ===
+                    "duitnow"
                       ? "is-selected"
                       : ""
                   }`}
@@ -755,7 +795,8 @@ export default function Checkout() {
                     name="paymentMethod"
                     value="duitnow"
                     checked={
-                      form.paymentMethod === "duitnow"
+                      form.paymentMethod ===
+                      "duitnow"
                     }
                     onChange={updateField}
                   />
@@ -765,17 +806,22 @@ export default function Checkout() {
                   </span>
 
                   <span>
-                    <strong>DuitNow QR</strong>
+                    <strong>
+                      DuitNow QR
+                    </strong>
+
                     <small>
-                      Scan the payment QR after order
-                      confirmation.
+                      Scan the QR code, pay the
+                      exact amount, and upload
+                      your receipt.
                     </small>
                   </span>
                 </label>
 
                 <label
                   className={`payment-card ${
-                    form.paymentMethod === "fpx"
+                    form.paymentMethod ===
+                    "cash"
                       ? "is-selected"
                       : ""
                   }`}
@@ -783,170 +829,256 @@ export default function Checkout() {
                   <input
                     type="radio"
                     name="paymentMethod"
-                    value="fpx"
+                    value="cash"
                     checked={
-                      form.paymentMethod === "fpx"
+                      form.paymentMethod ===
+                      "cash"
                     }
                     onChange={updateField}
                   />
 
                   <span className="payment-card-icon">
-                    FPX
+                    RM
                   </span>
 
                   <span>
-                    <strong>FPX Online Banking</strong>
+                    <strong>
+                      Cash at Pickup
+                    </strong>
+
                     <small>
-                      Continue to a secure banking gateway.
+                      Pay the exact amount when
+                      collecting your order at
+                      EDU Café.
                     </small>
                   </span>
                 </label>
-
-                <label
-                  className={`payment-card ${
-                    form.paymentMethod === "ewallet"
-                      ? "is-selected"
-                      : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="ewallet"
-                    checked={
-                      form.paymentMethod === "ewallet"
-                    }
-                    onChange={updateField}
-                  />
-
-                  <span className="payment-card-icon">
-                    WAL
-                  </span>
-
-                  <span>
-                    <strong>E-wallet</strong>
-                    <small>
-                      Pay using a supported Malaysian
-                      e-wallet.
-                    </small>
-                  </span>
-                </label>
-
-                {form.fulfilmentMethod === "pickup" && (
-                  <label
-                    className={`payment-card ${
-                      form.paymentMethod === "cash"
-                        ? "is-selected"
-                        : ""
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="cash"
-                      checked={
-                        form.paymentMethod === "cash"
-                      }
-                      onChange={updateField}
-                    />
-
-                    <span className="payment-card-icon">
-                      RM
-                    </span>
-
-                    <span>
-                      <strong>Cash at Pickup</strong>
-                      <small>
-                        Pay when collecting at the campus
-                        pickup point.
-                      </small>
-                    </span>
-                  </label>
-                )}
               </div>
 
               <FieldError
-                message={errors.paymentMethod}
+                message={
+                  errors.paymentMethod
+                }
               />
 
-              <div className="payment-security-notice">
-                <strong>Prototype security notice</strong>
+              {form.paymentMethod ===
+                "duitnow" && (
+                <div className="duitnow-payment-panel">
+                  <div className="duitnow-qr-layout">
+                    <div>
+                      <p className="eyebrow">
+                        SCAN_TO_PAY
+                      </p>
 
-                <p>
-                  Real payment processing requires a verified
-                  payment gateway and secure backend. This
-                  prototype only records the selected payment
-                  method.
-                </p>
-              </div>
+                      <h3>
+                        Pay{" "}
+                        {formatCurrency(
+                          subtotal,
+                        )}
+                      </h3>
+
+                      <p>
+                        Scan the Loopify DuitNow
+                        QR code using your
+                        banking or e-wallet
+                        application.
+                      </p>
+
+                      <img
+                        className="duitnow-qr-image"
+                        src={duitNowQr}
+                        alt="Loopify DuitNow QR code for customer payment"
+                        />
+                    </div>
+
+                    <div className="receipt-upload">
+                      <h3>
+                        Upload Payment Proof
+                      </h3>
+
+                      <p>
+                        After completing the
+                        payment, upload a clear
+                        screenshot or PDF of the
+                        receipt.
+                      </p>
+
+                      <label htmlFor="payment-receipt">
+                        Payment receipt *
+                      </label>
+
+                      <input
+                        id="payment-receipt"
+                        name="paymentReceipt"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                        aria-invalid={Boolean(
+                          errors.receipt,
+                        )}
+                        onChange={
+                          handleReceiptUpload
+                        }
+                      />
+
+                      <small>
+                        Accepted formats: JPG,
+                        JPEG, PNG, or PDF.
+                        Maximum size: 5 MB.
+                      </small>
+
+                      <FieldError
+                        message={
+                          errors.receipt
+                        }
+                      />
+
+                      {receiptFile && (
+                        <div className="uploaded-file">
+                          <div>
+                            <strong>
+                              Receipt selected
+                            </strong>
+
+                            <span>
+                              {
+                                receiptFile.name
+                              }
+                            </span>
+
+                            <small>
+                              {(
+                                receiptFile.size /
+                                1024 /
+                                1024
+                              ).toFixed(2)}{" "}
+                              MB
+                            </small>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={
+                              removeReceipt
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="payment-security-notice">
+                    <strong>
+                      Before uploading
+                    </strong>
+
+                    <p>
+                      Confirm that the payment
+                      amount and recipient are
+                      correct. Do not upload
+                      passwords, PIN numbers, or
+                      full banking login
+                      information.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {form.paymentMethod ===
+                "cash" && (
+                <div className="cash-payment-notice">
+                  <strong>
+                    Cash payment selected
+                  </strong>
+
+                  <p>
+                    Prepare{" "}
+                    {formatCurrency(subtotal)}{" "}
+                    and pay when collecting your
+                    order at EDU Café.
+                  </p>
+                </div>
+              )}
             </section>
           )}
 
           {currentStep === 4 && (
             <section aria-labelledby="review-heading">
-              <p className="eyebrow">STEP_04</p>
+              <p className="eyebrow">
+                STEP_04
+              </p>
+
               <h2 id="review-heading">
                 Review Your Order
               </h2>
 
               <div className="review-section">
                 <div className="review-section-heading">
-                  <h3>Customer Details</h3>
+                  <h3>
+                    Customer Details
+                  </h3>
 
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(1)}
+                    onClick={() =>
+                      setCurrentStep(1)
+                    }
                   >
                     Edit
                   </button>
                 </div>
 
                 <p>
-                  <strong>{form.fullName}</strong>
+                  <strong>
+                    {form.fullName}
+                  </strong>
                 </p>
+
                 <p>{form.email}</p>
                 <p>{form.phone}</p>
 
                 {form.matricNumber && (
                   <p>
-                    Matric number: {form.matricNumber}
+                    Matric number:{" "}
+                    {form.matricNumber}
                   </p>
                 )}
               </div>
 
               <div className="review-section">
                 <div className="review-section-heading">
-                  <h3>Fulfilment</h3>
+                  <h3>Campus Pickup</h3>
 
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() =>
+                      setCurrentStep(2)
+                    }
                   >
                     Edit
                   </button>
                 </div>
 
-                {form.fulfilmentMethod === "pickup" ? (
-                  <>
-                    <p>
-                      <strong>Campus Pickup</strong>
-                    </p>
-                    <p>EDU Café</p>
-                    <p>{form.pickupDate}</p>
-                    <p>{form.pickupTime}</p>
-                  </>
-                ) : (
-                  <>
-                    <p>
-                      <strong>Delivery</strong>
-                    </p>
-                    <p>{form.addressLine}</p>
-                    <p>
-                      {form.postcode} {form.city},{" "}
-                      {form.state}
-                    </p>
-                  </>
-                )}
+                <p>
+                  <strong>EDU Café</strong>
+                </p>
+
+                <p>
+                  Near the Kulliyyah of
+                  Engineering and Education
+                  buildings
+                </p>
+
+                <p>
+                  Pickup date:{" "}
+                  {form.pickupDate}
+                </p>
+
+                <p>
+                  Pickup time:{" "}
+                  {form.pickupTime}
+                </p>
               </div>
 
               <div className="review-section">
@@ -955,25 +1087,44 @@ export default function Checkout() {
 
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(3)}
+                    onClick={() =>
+                      setCurrentStep(3)
+                    }
                   >
                     Edit
                   </button>
                 </div>
 
                 <p>
-                  {form.paymentMethod === "duitnow" &&
-                    "DuitNow QR"}
-
-                  {form.paymentMethod === "fpx" &&
-                    "FPX Online Banking"}
-
-                  {form.paymentMethod === "ewallet" &&
-                    "E-wallet"}
-
-                  {form.paymentMethod === "cash" &&
-                    "Cash at Pickup"}
+                  <strong>
+                    {getPaymentMethodLabel(
+                      form.paymentMethod,
+                    )}
+                  </strong>
                 </p>
+
+                {form.paymentMethod ===
+                  "duitnow" &&
+                  receiptFile && (
+                    <>
+                      <p>
+                        Payment proof uploaded
+                      </p>
+
+                      <p>
+                        Receipt:{" "}
+                        {receiptFile.name}
+                      </p>
+                    </>
+                  )}
+
+                {form.paymentMethod ===
+                  "cash" && (
+                  <p>
+                    Payment will be made during
+                    pickup.
+                  </p>
+                )}
               </div>
 
               <div className="review-section">
@@ -985,12 +1136,14 @@ export default function Checkout() {
                     key={item.id}
                   >
                     <span>
-                      {item.name} × {item.quantity}
+                      {item.name} ×{" "}
+                      {item.quantity}
                     </span>
 
                     <strong>
                       {formatCurrency(
-                        item.price * item.quantity,
+                        item.price *
+                          item.quantity,
                       )}
                     </strong>
                   </div>
@@ -1001,20 +1154,29 @@ export default function Checkout() {
                 <input
                   type="checkbox"
                   name="agreeTerms"
-                  checked={form.agreeTerms}
+                  checked={
+                    form.agreeTerms
+                  }
                   onChange={updateField}
                 />
 
                 <span>
-                  I understand that the exact charm design is
-                  randomly selected, and I agree to the website
-                  terms and conditions.
+                  I understand that the exact
+                  charm design is randomly
+                  selected. I confirm that my
+                  pickup and payment information
+                  is correct, and I agree to the
+                  website terms and conditions.
                 </span>
               </label>
 
-              <FieldError message={errors.agreeTerms} />
+              <FieldError
+                message={errors.agreeTerms}
+              />
 
-              <FieldError message={errors.submit} />
+              <FieldError
+                message={errors.submit}
+              />
             </section>
           )}
 
@@ -1023,7 +1185,9 @@ export default function Checkout() {
               <button
                 className="button button-secondary"
                 type="button"
-                onClick={moveToPreviousStep}
+                onClick={
+                  moveToPreviousStep
+                }
               >
                 Back
               </button>
@@ -1071,15 +1235,20 @@ export default function Checkout() {
                 key={item.id}
               >
                 <div>
-                  <strong>{item.shortName}</strong>
+                  <strong>
+                    {item.shortName}
+                  </strong>
+
                   <span>
-                    Quantity: {item.quantity}
+                    Quantity:{" "}
+                    {item.quantity}
                   </span>
                 </div>
 
                 <strong>
                   {formatCurrency(
-                    item.price * item.quantity,
+                    item.price *
+                      item.quantity,
                   )}
                 </strong>
               </div>
@@ -1088,19 +1257,30 @@ export default function Checkout() {
 
           <div className="summary-row">
             <span>Mystery boxes</span>
-            <strong>{totalBoxes}</strong>
+            <strong>
+              {totalBoxes}
+            </strong>
+          </div>
+
+          <div className="summary-row">
+            <span>
+              Campus pickup
+            </span>
+
+            <strong>Free</strong>
           </div>
 
           <div className="summary-total">
             <span>Total</span>
+
             <strong>
               {formatCurrency(subtotal)}
             </strong>
           </div>
 
           <p>
-            The total currently includes the selected products.
-            Campus pickup has no additional charge.
+            All orders are collected at EDU
+            Café. Delivery is not available.
           </p>
         </aside>
       </div>

@@ -1,3 +1,4 @@
+import { regularCollections } from "../../data/collections.js";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -5,16 +6,43 @@ import { useCart } from "../../context/CartContext.jsx";
 import { formatCurrency } from "../../utils/formatCurrency.js";
 
 export default function ProductCard({ product }) {
-  const { addItem } = useCart();
+  const {
+    addItem,
+    remainingCapacity,
+    maxCartBoxes,
+  } = useCart();
+
   const [added, setAdded] = useState(false);
 
+  const maximumReached = remainingCapacity <= 0;
+
   function handleAddToCart() {
+    if (maximumReached) {
+      return;
+    }
+
     addItem(product, 1);
     setAdded(true);
 
     window.setTimeout(() => {
       setAdded(false);
     }, 1800);
+  }
+
+  function getButtonText() {
+    if (!product.inStock) {
+      return "Sold Out";
+    }
+
+    if (maximumReached) {
+      return `Maximum ${maxCartBoxes} Reached`;
+    }
+
+    if (added) {
+      return "Added!";
+    }
+
+    return "Add to Cart";
   }
 
   return (
@@ -26,28 +54,30 @@ export default function ProductCard({ product }) {
       >
         <div
           className={`product-visual product-theme-${product.theme}`}
-          aria-hidden="true"
         >
           <span className="product-window-label">
             {product.badge}
           </span>
 
-          <div className="product-box-art">
-            <span>?</span>
-          </div>
+          <div className="product-photo-collage">
+            {regularCollections.map((collection) => (
+                <img
+                key={collection.id}
+                src={collection.image}
+                alt={collection.imageAlt}
+                />
+            ))}
+            </div>
 
           <span className="product-box-count">
-            {product.boxCount}{" "}
-            {product.boxCount === 1 ? "blind box" : "blind boxes"}
+            1 blind box
           </span>
         </div>
       </Link>
 
       <div className="product-card-content">
         <p className="product-category">
-          {product.category === "bundle"
-            ? "Mystery Bundle"
-            : "Mystery Blind Box"}
+          Mystery Blind Box
         </p>
 
         <h2 className="product-card-title">
@@ -63,15 +93,12 @@ export default function ProductCard({ product }) {
             {formatCurrency(product.price)}
           </strong>
 
-          <span>
-            {product.boxCount === 1
-              ? "1 charm"
-              : `${product.boxCount} charms`}
-          </span>
+          <span>1 charm</span>
         </div>
 
         <p className="mystery-disclosure">
           Exact charm designs are randomly selected.
+          Maximum three boxes per order.
         </p>
 
         <div className="product-card-actions">
@@ -85,14 +112,12 @@ export default function ProductCard({ product }) {
           <button
             className="button button-primary"
             type="button"
-            disabled={!product.inStock}
+            disabled={
+              !product.inStock || maximumReached
+            }
             onClick={handleAddToCart}
           >
-            {product.inStock
-              ? added
-                ? "Added!"
-                : "Add to Cart"
-              : "Sold Out"}
+            {getButtonText()}
           </button>
         </div>
 
@@ -100,9 +125,12 @@ export default function ProductCard({ product }) {
           className="product-add-feedback"
           aria-live="polite"
         >
-          {added
-            ? `${product.shortName} was added to your cart.`
-            : ""}
+          {added &&
+            `${product.shortName} was added to your cart.`}
+
+          {!added &&
+            maximumReached &&
+            `Your bag already contains the maximum of ${maxCartBoxes} boxes.`}
         </p>
       </div>
     </article>

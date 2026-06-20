@@ -1,3 +1,4 @@
+import loopifyLogo from "../../assets/images/brand/loopify-logo.jpeg";
 import { Link } from "react-router";
 
 export default function Footer() {
@@ -5,14 +6,16 @@ export default function Footer() {
     <footer className="site-footer">
       <div>
         <div className="footer-brand">
-          <span className="brand-mark" aria-hidden="true">
-            LC
-          </span>
+            <img
+                className="footer-logo"
+                src={loopifyLogo}
+                alt="Loopify Charmies"
+            />
 
-          <div>
-            <strong>Loopify Charmies</strong>
-            <p>Find Your Lucky Charms!</p>
-          </div>
+            <div>
+                <strong>Loopify Charmies</strong>
+                <p>Find Your Lucky Charms!</p>
+            </div>
         </div>
 
         <p className="footer-description">
@@ -46,8 +49,15 @@ export default function Footer() {
       <div>
         <h2>Join the Loop</h2>
 
-        <p>@loopify_charmies</p>
-        <p>Instagram · Telegram · TikTok</p>
+        <a
+        className="social-link"
+        href="https://www.instagram.com/loopify_charmies/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open Loopify Charmies on Instagram"
+        >
+        Instagram @loopify_charmies ↗
+        </a>
         <p>Campus pickup at EDU Café</p>
       </div>
 

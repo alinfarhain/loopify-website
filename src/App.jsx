@@ -78,7 +78,7 @@ export default function App() {
           element={
             <PlaceholderPage
               title="Frequently Asked Questions"
-              description="Find information about ordering, payment, pickup, delivery and duplicate charms."
+              description="Find information about ordering, payment, pickup, and duplicate charms."
             />
           }
         />

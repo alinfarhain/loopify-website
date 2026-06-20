@@ -111,6 +111,24 @@ export default function OrderConfirmation() {
               <p>EDU Café</p>
               <p>{order.fulfilment.pickupDate}</p>
               <p>{order.fulfilment.pickupTime}</p>
+              <h3>Payment</h3>
+
+                <p>
+                <strong>
+                    {order.paymentMethod === "duitnow"
+                    ? "DuitNow QR"
+                    : "Cash at Pickup"}
+                </strong>
+                </p>
+
+                <p>{order.paymentStatus}</p>
+
+                {order.receiptProof?.name && (
+                <p>
+                    Receipt submitted:{" "}
+                    {order.receiptProof.name}
+                </p>
+                )}
             </>
           ) : (
             <>
@@ -152,7 +170,7 @@ export default function OrderConfirmation() {
         <div className="order-progress-item">
           <span>3</span>
           <strong>
-            Ready for pickup or delivery
+            Ready for pickup
           </strong>
         </div>
       </div>

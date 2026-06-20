@@ -8,6 +8,8 @@ export default function Cart() {
     cartItems,
     subtotal,
     totalBoxes,
+    remainingCapacity,
+    maxCartBoxes,
     updateQuantity,
     removeItem,
     clearCart,
@@ -23,19 +25,33 @@ export default function Cart() {
     }
   }
 
+  function handleRemoveItem(itemId, itemName) {
+    const confirmed = window.confirm(
+      `Remove ${itemName} from your cart?`,
+    );
+
+    if (confirmed) {
+      removeItem(itemId);
+    }
+  }
+
   if (cartItems.length === 0) {
     return (
       <section className="empty-cart-page page-section">
-        <div className="empty-cart-symbol" aria-hidden="true">
+        <div
+          className="empty-cart-symbol"
+          aria-hidden="true"
+        >
           ?
         </div>
 
         <p className="eyebrow">SHOPPING_BAG_EMPTY</p>
+
         <h1>Your charm bag is empty</h1>
 
         <p>
-          Add a mystery blind box and begin searching for your
-          lucky charm.
+          Add between one and three Loopify mystery blind
+          boxes to begin searching for your lucky charm.
         </p>
 
         <Link
@@ -54,6 +70,11 @@ export default function Cart() {
         <div>
           <p className="eyebrow">SHOPPING_BAG.EXE</p>
           <h1>Your Charm Bag</h1>
+
+          <p>
+            You may purchase a maximum of {maxCartBoxes}{" "}
+            mystery boxes per order.
+          </p>
         </div>
 
         <button
@@ -67,115 +88,192 @@ export default function Cart() {
 
       <div className="cart-layout">
         <div className="cart-items">
-          {cartItems.map((item) => (
-            <article
-              className="cart-item"
-              key={item.id}
-            >
-              <div
-                className={`cart-item-visual product-theme-${item.theme}`}
-                aria-hidden="true"
+          {cartItems.map((item) => {
+            const otherBoxes =
+              totalBoxes -
+              item.quantity * item.boxCount;
+
+            const maximumQuantityForItem = Math.floor(
+              (maxCartBoxes - otherBoxes) /
+                item.boxCount,
+            );
+
+            const itemTotalBoxes =
+              item.quantity * item.boxCount;
+
+            const maximumReached =
+              totalBoxes >= maxCartBoxes;
+
+            return (
+              <article
+                className="cart-item"
+                key={item.id}
               >
-                <span>?</span>
-              </div>
-
-              <div className="cart-item-details">
-                <p className="product-category">
-                  Loopify Mystery Product
-                </p>
-
-                <h2>
-                  <Link to={`/product/${item.slug}`}>
-                    {item.name}
-                  </Link>
-                </h2>
-
-                <p>
-                  {item.boxCount}{" "}
-                  {item.boxCount === 1
-                    ? "blind box"
-                    : "blind boxes"}{" "}
-                  per pack
-                </p>
-
-                <p>
-                  {formatCurrency(item.price)} per pack
-                </p>
-
-                <button
-                  className="cart-remove-button"
-                  type="button"
-                  onClick={() => removeItem(item.id)}
+                <div
+                  className={`cart-item-visual product-theme-${item.theme}`}
+                  aria-hidden="true"
                 >
-                  Remove item
-                </button>
-              </div>
+                  <span>?</span>
+                </div>
 
-              <div className="cart-item-actions">
-                <div className="quantity-control">
+                <div className="cart-item-details">
+                  <p className="product-category">
+                    Loopify Mystery Blind Box
+                  </p>
+
+                  <h2>
+                    <Link
+                      to={`/product/${item.slug}`}
+                    >
+                      {item.name}
+                    </Link>
+                  </h2>
+
+                  <p>
+                    One randomly selected Y2K phone charm
+                    per box.
+                  </p>
+
+                  <p>
+                    <strong>
+                      {formatCurrency(item.price)}
+                    </strong>{" "}
+                    per box
+                  </p>
+
+                  <p className="mystery-disclosure">
+                    Exact charm designs are randomly
+                    selected.
+                  </p>
+
                   <button
+                    className="cart-remove-button"
                     type="button"
-                    aria-label={`Decrease ${item.name} quantity`}
                     onClick={() =>
-                      updateQuantity(
+                      handleRemoveItem(
                         item.id,
-                        item.quantity - 1,
+                        item.name,
                       )
                     }
                   >
-                    −
-                  </button>
-
-                  <input
-                    type="number"
-                    min="1"
-                    max="20"
-                    aria-label={`${item.name} quantity`}
-                    value={item.quantity}
-                    onChange={(event) =>
-                      updateQuantity(
-                        item.id,
-                        Number(event.target.value),
-                      )
-                    }
-                  />
-
-                  <button
-                    type="button"
-                    aria-label={`Increase ${item.name} quantity`}
-                    onClick={() =>
-                      updateQuantity(
-                        item.id,
-                        item.quantity + 1,
-                      )
-                    }
-                  >
-                    +
+                    Remove item
                   </button>
                 </div>
 
-                <strong className="cart-line-total">
-                  {formatCurrency(
-                    item.price * item.quantity,
-                  )}
-                </strong>
+                <div className="cart-item-actions">
+                  <label
+                    className="visually-hidden"
+                    htmlFor={`cart-quantity-${item.id}`}
+                  >
+                    Quantity for {item.name}
+                  </label>
 
-                <span>
-                  {item.quantity * item.boxCount} total{" "}
-                  {item.quantity * item.boxCount === 1
-                    ? "box"
-                    : "boxes"}
-                </span>
-              </div>
-            </article>
-          ))}
+                  <div className="quantity-control">
+                    <button
+                      type="button"
+                      aria-label={`Decrease ${item.name} quantity`}
+                      disabled={item.quantity <= 1}
+                      onClick={() =>
+                        updateQuantity(
+                          item.id,
+                          item.quantity - 1,
+                        )
+                      }
+                    >
+                      −
+                    </button>
+
+                    <input
+                      id={`cart-quantity-${item.id}`}
+                      type="number"
+                      min="1"
+                      max={maximumQuantityForItem}
+                      aria-label={`${item.name} quantity`}
+                      value={item.quantity}
+                      onChange={(event) => {
+                        const enteredValue =
+                          event.target.value;
+
+                        if (enteredValue === "") {
+                          return;
+                        }
+
+                        updateQuantity(
+                          item.id,
+                          Number(enteredValue),
+                        );
+                      }}
+                    />
+
+                    <button
+                      type="button"
+                      aria-label={`Increase ${item.name} quantity`}
+                      disabled={
+                        item.quantity >=
+                        maximumQuantityForItem
+                      }
+                      onClick={() =>
+                        updateQuantity(
+                          item.id,
+                          item.quantity + 1,
+                        )
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <strong className="cart-line-total">
+                    {formatCurrency(
+                      item.price * item.quantity,
+                    )}
+                  </strong>
+
+                  <span>
+                    {itemTotalBoxes}{" "}
+                    {itemTotalBoxes === 1
+                      ? "mystery box"
+                      : "mystery boxes"}
+                  </span>
+
+                  {maximumReached && (
+                    <span className="cart-limit-message">
+                      Maximum of {maxCartBoxes} boxes
+                      reached
+                    </span>
+                  )}
+
+                  {!maximumReached && (
+                    <span className="cart-limit-message">
+                      You may add {remainingCapacity} more{" "}
+                      {remainingCapacity === 1
+                        ? "box"
+                        : "boxes"}
+                    </span>
+                  )}
+                </div>
+              </article>
+            );
+          })}
 
           <div className="cart-mystery-notice">
-            <strong>Remember:</strong>
+            <strong>Blind-box reminder</strong>
+
             <p>
-              You are purchasing mystery charms. The exact
-              collection and design will only be revealed when
-              each package is opened.
+              You are purchasing mystery charms. The
+              exact collection and design will only be
+              revealed when each package is opened.
+              Duplicate charms are possible.
+            </p>
+          </div>
+
+          <div className="cart-mystery-notice">
+            <strong>Purchase limit</strong>
+
+            <p>
+              Each customer may purchase a maximum of{" "}
+              {maxCartBoxes} Loopify mystery boxes in one
+              order.
             </p>
           </div>
         </div>
@@ -184,7 +282,7 @@ export default function Cart() {
           <div className="window-title-bar">
             <span>order_summary.exe</span>
 
-            <div>
+            <div aria-hidden="true">
               <span>—</span>
               <span>□</span>
               <span>×</span>
@@ -200,9 +298,26 @@ export default function Cart() {
             </div>
 
             <div className="summary-row">
-              <span>Subtotal</span>
+              <span>Maximum allowed</span>
+              <strong>{maxCartBoxes} boxes</strong>
+            </div>
+
+            <div className="summary-row">
+              <span>Remaining capacity</span>
               <strong>
-                {formatCurrency(subtotal)}
+                {remainingCapacity}{" "}
+                {remainingCapacity === 1
+                  ? "box"
+                  : "boxes"}
+              </strong>
+            </div>
+
+            <div className="summary-row">
+              <span>Price per box</span>
+              <strong>
+                {cartItems.length > 0
+                    ? formatCurrency(cartItems[0].price)
+                    : formatCurrency(7)}
               </strong>
             </div>
 
@@ -213,6 +328,7 @@ export default function Cart() {
 
             <div className="summary-total">
               <span>Total</span>
+
               <strong>
                 {formatCurrency(subtotal)}
               </strong>
@@ -233,9 +349,9 @@ export default function Cart() {
             </Link>
 
             <p className="cart-security-note">
-              Payment is selected during checkout. Do not
-              include sensitive banking information in the
-              order notes.
+              Payment is selected during checkout. Do
+              not include passwords or sensitive banking
+              information in the order notes.
             </p>
           </div>
         </aside>

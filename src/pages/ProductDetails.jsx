@@ -1,3 +1,7 @@
+import {
+  collections,
+  regularCollections,
+} from "../data/collections.js";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 
@@ -8,19 +12,30 @@ import { formatCurrency } from "../utils/formatCurrency.js";
 export default function ProductDetails() {
   const { productSlug } = useParams();
   const product = getProductBySlug(productSlug);
-  const { addItem } = useCart();
+
+  const {
+    addItem,
+    totalBoxes,
+    remainingCapacity,
+    maxCartBoxes,
+  } = useCart();
 
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [lastAddedQuantity, setLastAddedQuantity] =
+    useState(0);
 
   if (!product) {
     return (
       <section className="placeholder-page page-section">
         <div className="placeholder-content">
           <p className="eyebrow">ERROR 404</p>
+
           <h1>Product file not found</h1>
+
           <p>
-            This Loopify product may have been moved or removed.
+            This Loopify product may have been moved or
+            removed.
           </p>
 
           <Link
@@ -34,6 +49,18 @@ export default function ProductDetails() {
     );
   }
 
+  const maximumReached = remainingCapacity <= 0;
+
+  const maximumSelectableQuantity = Math.max(
+    1,
+    remainingCapacity,
+  );
+
+  const safeQuantity = Math.min(
+    quantity,
+    maximumSelectableQuantity,
+  );
+
   function decreaseQuantity() {
     setQuantity((currentQuantity) =>
       Math.max(1, currentQuantity - 1),
@@ -41,14 +68,62 @@ export default function ProductDetails() {
   }
 
   function increaseQuantity() {
+    if (maximumReached) {
+      return;
+    }
+
     setQuantity((currentQuantity) =>
-      Math.min(10, currentQuantity + 1),
+      Math.min(
+        maximumSelectableQuantity,
+        currentQuantity + 1,
+      ),
+    );
+  }
+
+  function handleQuantityInput(event) {
+    if (maximumReached) {
+      return;
+    }
+
+    const requestedQuantity = Number(
+      event.target.value,
+    );
+
+    if (!Number.isFinite(requestedQuantity)) {
+      return;
+    }
+
+    const wholeQuantity = Math.floor(
+      requestedQuantity,
+    );
+
+    setQuantity(
+      Math.min(
+        maximumSelectableQuantity,
+        Math.max(1, wholeQuantity),
+      ),
     );
   }
 
   function handleAddToCart() {
-    addItem(product, quantity);
+    if (maximumReached) {
+      return;
+    }
+
+    const quantityToAdd = Math.min(
+      safeQuantity,
+      remainingCapacity,
+    );
+
+    if (quantityToAdd <= 0) {
+      return;
+    }
+
+    addItem(product, quantityToAdd);
+
+    setLastAddedQuantity(quantityToAdd);
     setAdded(true);
+    setQuantity(1);
 
     window.setTimeout(() => {
       setAdded(false);
@@ -62,9 +137,13 @@ export default function ProductDetails() {
         aria-label="Breadcrumb"
       >
         <Link to="/">Home</Link>
+
         <span aria-hidden="true">/</span>
+
         <Link to="/shop">Shop</Link>
+
         <span aria-hidden="true">/</span>
+
         <span aria-current="page">
           {product.shortName}
         </span>
@@ -73,15 +152,31 @@ export default function ProductDetails() {
       <div className="product-details-layout">
         <div
           className={`product-details-visual product-theme-${product.theme}`}
-          aria-hidden="true"
         >
           <span className="product-window-label">
             {product.badge}
           </span>
 
-          <div className="product-box-art product-box-art-large">
-            <span>?</span>
-          </div>
+          <div className="product-details-photo-grid">
+            {regularCollections.map((collection) => (
+                <figure key={collection.id}>
+                <img
+                    src={collection.image}
+                    alt={collection.imageAlt}
+                />
+
+                <figcaption>
+                    {collection.name}
+                </figcaption>
+                </figure>
+            ))}
+
+            <div className="product-details-secret">
+                <span aria-hidden="true">?</span>
+                <strong>Secret Charm</strong>
+                <small>HaloWhimpz.exe</small>
+            </div>
+            </div>
 
           <p>
             secret_charm_status:
@@ -106,22 +201,38 @@ export default function ProductDetails() {
 
           <div className="product-notice">
             <strong>Blind-box disclosure</strong>
+
             <p>
-              Each box contains a randomly selected charm.
-              Exact designs cannot be chosen before opening.
-              Duplicate charms are possible.
+              Each box contains one randomly selected
+              charm. Exact designs cannot be chosen
+              before opening. Duplicate charms are
+              possible.
+            </p>
+          </div>
+
+          <div className="product-notice">
+            <strong>Purchase limit</strong>
+
+            <p>
+              Each customer can purchase a maximum of{" "}
+              {maxCartBoxes} boxes per order. Your bag
+              currently contains {totalBoxes}{" "}
+              {totalBoxes === 1 ? "box" : "boxes"}.
             </p>
           </div>
 
           <div className="quantity-section">
             <label htmlFor="product-quantity">
-              Number of packs
+              Number of boxes
             </label>
 
             <div className="quantity-control">
               <button
                 type="button"
                 aria-label="Decrease quantity"
+                disabled={
+                  maximumReached || safeQuantity <= 1
+                }
                 onClick={decreaseQuantity}
               >
                 −
@@ -131,41 +242,48 @@ export default function ProductDetails() {
                 id="product-quantity"
                 type="number"
                 min="1"
-                max="10"
-                value={quantity}
-                onChange={(event) => {
-                  const nextQuantity = Number(
-                    event.target.value,
-                  );
-
-                  if (Number.isFinite(nextQuantity)) {
-                    setQuantity(
-                      Math.min(
-                        10,
-                        Math.max(1, nextQuantity),
-                      ),
-                    );
-                  }
-                }}
+                max={maximumSelectableQuantity}
+                disabled={maximumReached}
+                value={safeQuantity}
+                onChange={handleQuantityInput}
               />
 
               <button
                 type="button"
                 aria-label="Increase quantity"
+                disabled={
+                  maximumReached ||
+                  safeQuantity >=
+                    maximumSelectableQuantity
+                }
                 onClick={increaseQuantity}
               >
                 +
               </button>
             </div>
+
+            {!maximumReached && (
+              <p className="quantity-helper-text">
+                You may add up to {remainingCapacity} more{" "}
+                {remainingCapacity === 1
+                  ? "box"
+                  : "boxes"}{" "}
+                to this order.
+              </p>
+            )}
+
+            {maximumReached && (
+              <p className="quantity-helper-text">
+                Your bag already contains the maximum of{" "}
+                {maxCartBoxes} boxes.
+              </p>
+            )}
           </div>
 
           <div className="product-purchase-summary">
             <span>
-              Total mystery boxes:
-              <strong>
-                {" "}
-                {quantity * product.boxCount}
-              </strong>
+              Boxes to add:
+              <strong> {safeQuantity}</strong>
             </span>
 
             <span>
@@ -173,7 +291,7 @@ export default function ProductDetails() {
               <strong>
                 {" "}
                 {formatCurrency(
-                  quantity * product.price,
+                  safeQuantity * product.price,
                 )}
               </strong>
             </span>
@@ -182,37 +300,61 @@ export default function ProductDetails() {
           <button
             className="button button-primary product-add-button"
             type="button"
+            disabled={maximumReached}
             onClick={handleAddToCart}
           >
-            {added
-              ? "Added to Cart!"
-              : `Add to Cart — ${formatCurrency(
-                  quantity * product.price,
-                )}`}
+            {maximumReached
+              ? `Maximum ${maxCartBoxes} Boxes Reached`
+              : added
+                ? "Added to Cart!"
+                : `Add to Cart — ${formatCurrency(
+                    safeQuantity * product.price,
+                  )}`}
           </button>
 
           <p
             className="product-add-feedback"
             aria-live="polite"
           >
-            {added
-              ? `${quantity} pack${
-                  quantity > 1 ? "s" : ""
-                } added successfully.`
-              : ""}
+            {added &&
+              `${lastAddedQuantity} ${
+                lastAddedQuantity === 1
+                  ? "box was"
+                  : "boxes were"
+              } added successfully.`}
+
+            {!added &&
+              maximumReached &&
+              `Your bag already contains the maximum of ${maxCartBoxes} boxes.`}
           </p>
 
           <div className="product-details-section">
             <h2>Possible collections</h2>
 
             <div className="collection-pill-list">
-              {product.collectionPossibilities.map(
-                (collection) => (
-                  <span key={collection}>
-                    {collection}
-                  </span>
-                ),
-              )}
+              <div className="collection-showcase-grid">
+                {collections.map((collection) => (
+                    <article
+                    className="collection-showcase-card"
+                    key={collection.id}
+                    >
+                    {collection.isSecret ? (
+                        <div className="collection-showcase-secret">
+                        <span aria-hidden="true">?</span>
+                        <strong>Image Locked</strong>
+                        </div>
+                    ) : (
+                        <img
+                        src={collection.image}
+                        alt={collection.imageAlt}
+                        />
+                    )}
+
+                    <h3>{collection.name}</h3>
+                    <p>{collection.label}</p>
+                    </article>
+                ))}
+                </div>
             </div>
           </div>
 
