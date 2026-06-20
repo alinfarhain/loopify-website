@@ -32,6 +32,7 @@ export default function Footer() {
           <Link to="/collections">Collections</Link>
           <Link to="/how-it-works">How It Works</Link>
           <Link to="/community">Community</Link>
+          <Link to="/about">About Loopify</Link>
         </div>
       </div>
 

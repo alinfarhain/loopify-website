@@ -12,6 +12,7 @@ import Shop from "./pages/Shop.jsx";
 import Collections from "./pages/Collections.jsx";
 import HowItWorks from "./pages/HowItWorks.jsx";
 import Community from "./pages/Community.jsx";
+import About from "./pages/About.jsx";
 
 export default function App() {
   return (
@@ -53,12 +54,7 @@ export default function App() {
 
         <Route
           path="about"
-          element={
-            <PlaceholderPage
-              title="About Loopify"
-              description="Discover Loopify's story, vision, mission and cyber-Y2K brand identity."
-            />
-          }
+          element={<About />}
         />
 
         <Route

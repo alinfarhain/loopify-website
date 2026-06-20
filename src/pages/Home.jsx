@@ -308,6 +308,13 @@ export default function Home() {
             <div className="home-community-actions">
             <Link
                 className="button button-secondary"
+                to="/about"
+            >
+                Meet Loopify
+            </Link>
+
+            <Link
+                className="button button-secondary"
                 to="/community"
             >
                 Explore the Community
