@@ -9,6 +9,7 @@ import OrderConfirmation from "./pages/OrderConfirmation.jsx";
 import PlaceholderPage from "./pages/PlaceholderPage.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
 import Shop from "./pages/Shop.jsx";
+import Collections from "./pages/Collections.jsx";
 
 export default function App() {
   return (
@@ -25,12 +26,7 @@ export default function App() {
 
         <Route
           path="collections"
-          element={
-            <PlaceholderPage
-              title="Collections"
-              description="Explore HyperBloomz, CosmicGlitz, AquaSurfz and the secret HaloWhimpz collection."
-            />
-          }
+          element={<Collections />}
         />
 
         <Route

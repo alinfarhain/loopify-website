@@ -174,12 +174,12 @@ export default function Home() {
 
               <Link
                 className="collection-link"
-                to="/collections"
-              >
+                to={`/collections#${collection.id}`}
+                >
                 {collection.isSecret
-                  ? "View secret file →"
-                  : "Explore collection →"}
-              </Link>
+                    ? "View secret file →"
+                    : "Explore collection →"}
+                </Link>
             </article>
           ))}
         </div>
