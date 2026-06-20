@@ -15,6 +15,7 @@ import Community from "./pages/Community.jsx";
 import About from "./pages/About.jsx";
 import FAQ from "./pages/FAQ.jsx";
 import Contact from "./pages/Contact.jsx";
+import Privacy from "./pages/Privacy.jsx";
 
 export default function App() {
   return (
@@ -90,7 +91,12 @@ export default function App() {
 
         <Route
           path="privacy"
-          element={<PlaceholderPage title="Privacy Policy" />}
+          element={<Privacy />}
+        />
+
+        <Route
+          path="privacy-policy"
+          element={<Privacy />}
         />
 
         <Route

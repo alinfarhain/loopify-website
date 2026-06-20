@@ -665,10 +665,13 @@ export default function Contact() {
               />
 
               <span>
-                I understand that this form
-                prepares a WhatsApp message and
-                that I must review and send the
-                message through WhatsApp.
+                I understand that this form prepares a
+                WhatsApp message and that I must review and
+                send it through WhatsApp. I have read the{" "}
+                <Link to="/privacy">
+                    Privacy Policy
+                </Link>
+                .
               </span>
             </label>
 

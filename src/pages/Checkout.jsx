@@ -1165,8 +1165,14 @@ export default function Checkout() {
                   charm design is randomly
                   selected. I confirm that my
                   pickup and payment information
-                  is correct, and I agree to the
-                  website terms and conditions.
+                  is correct, and I agree to the{" "}
+                    <Link to="/terms">
+                    Terms and Conditions
+                    </Link>{" "}
+                    and acknowledge the{" "}
+                    <Link to="/privacy">
+                    Privacy Policy
+                    </Link>.
                 </span>
               </label>
 
